@@ -69,6 +69,26 @@ namespace RecipeApplication
         public void setGarnish(string g) {  garnish = g;    }
         public void setGlass(string g) {    glass = g;  }
         public void setInstructions(string i) { instructions = i;   }
+
+        
+        public override string ToString()
+        {
+            string ret = "";
+            ret += String.Format("{0,-20}{1}\n", "ID:", ID);
+            ret += String.Format("{0,-20}{1}\n", "Name:", name);
+            ret += String.Format("{0,-20}{1}\n", "Ingredient List:", ingredientList[0]);
+            for(int i = 1; i < ingredientList.Count; i++)
+            {
+                ret += String.Format("{0,-20}{1}\n", "", ingredientList[0]);
+            }
+            ret += String.Format("{0,-20}{1}\n", "Preperation Style:", prepStyle);
+            ret += String.Format("{0,-20}{1}\n", "Ice Style:", iceStyle);
+            ret += String.Format("{0,-20}{1}\n", "Garnish:", garnish);
+            ret += String.Format("{0,-20}{1}\n", "Glass:", glass);
+            ret += String.Format("{0,-20}{1}\n", "Instructions:", instructions);
+
+            return ret;
+        }
     }
 
     class Ingredient
@@ -209,27 +229,6 @@ namespace RecipeApplication
                 Console.WriteLine("Error: File does not exist.");
                 return;
             }
-        }
-
-        // converts recipe R to string
-        string printRecipe(Recipe R)
-        {
-            List<Ingredient> tempIngredientList = R.getIngredientList();
-            string ret = "";
-            ret += String.Format("{0,-20}{1}\n", "ID:", R.getID());
-            ret += String.Format("{0,-20}{1}\n", "Name:", R.getName());
-            ret += String.Format("{0,-20}{1}\n", "Ingredient List:", tempIngredientList[0]);
-            for(int i = 1; i < tempIngredientList.Count; i++)
-            {
-                ret += String.Format("{0,-20}{1}\n", "", tempIngredientList[0]);
-            }
-            ret += String.Format("{0,-20}{1}\n", "Preperation Style:", R.getPrepStyle());
-            ret += String.Format("{0,-20}{1}\n", "Ice Style:", R.getIceStyle());
-            ret += String.Format("{0,-20}{1}\n", "Garnish:", R.getGarnish());
-            ret += String.Format("{0,-20}{1}\n", "Glass:", R.getGlass());
-            ret += String.Format("{0,-20}{1}\n", "Instructions:", R.getInstructions());
-
-            return ret;
         }
 
         static void Main(string[] args)
