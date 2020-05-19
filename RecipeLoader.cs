@@ -125,8 +125,8 @@ namespace RecipeApplication
 
     class RecipeLoader
     {
-        //loads all recipes from file filename into vector full
-        void loadRecipe(List<Recipe> full, string filename)
+        // loads all recipes from file filename into vector full
+        void loadRecipeList(List<Recipe> full, string filename)
         {
             try
             {
@@ -211,6 +211,26 @@ namespace RecipeApplication
             }
         }
 
+        // converts recipe R to string
+        string printRecipe(Recipe R)
+        {
+            List<Ingredient> tempIngredientList = R.getIngredientList();
+            string ret = "";
+            ret += String.Format("{0,-20}{1}\n", "ID:", R.getID());
+            ret += String.Format("{0,-20}{1}\n", "Name:", R.getName());
+            ret += String.Format("{0,-20}{1}\n", "Ingredient List:", tempIngredientList[0]);
+            for(int i = 1; i < tempIngredientList.Count; i++)
+            {
+                ret += String.Format("{0,-20}{1}\n", "", tempIngredientList[0]);
+            }
+            ret += String.Format("{0,-20}{1}\n", "Preperation Style:", R.getPrepStyle());
+            ret += String.Format("{0,-20}{1}\n", "Ice Style:", R.getIceStyle());
+            ret += String.Format("{0,-20}{1}\n", "Garnish:", R.getGarnish());
+            ret += String.Format("{0,-20}{1}\n", "Glass:", R.getGlass());
+            ret += String.Format("{0,-20}{1}\n", "Instructions:", R.getInstructions());
+
+            return ret;
+        }
 
         static void Main(string[] args)
         {
