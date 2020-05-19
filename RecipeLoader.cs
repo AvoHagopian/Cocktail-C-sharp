@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 
 namespace RecipeApplication
@@ -124,9 +125,96 @@ namespace RecipeApplication
 
     class RecipeLoader
     {
+        //loads all recipes from file filename into vector full
+        void loadRecipe(List<Recipe> full, string filename)
+        {
+            try
+            {
+                using(StreamReader fin = new StreamReader(new FileStream(filename, FileMode.Open, FileAccess.Read)))
+                {
+                    char c;
+                    string temp = "";
+                    string[] tempRecipe = new string[7];
+                    int quote = 0;
+                    int oops = 0;
+                    int comma = 0;
+                    full.Clear();
+                    List<Ingredient> tempIngredient = new List<Ingredient>();
+                    Ingredient tempIngredientObject;
+
+                    while(fin.Peek() >= 0)
+                    {
+                        while(comma < 8)
+                        {
+                            c = (char)fin.Read();
+                            switch(c)
+                            {
+                                case '"':
+                                    if(quote == 0)
+                                        quote++;
+                                    else
+                                        quote--;
+                                    break;
+                                case ',':
+                                    if(quote == 0)
+                                    {
+                                        if(comma == 2)
+                                        {
+                                            tempIngredientObject = new Ingredient();
+                                            oops += tempIngredientObject.setString(temp);
+                                            tempIngredient.Add(tempIngredientObject);
+                                        }
+                                        else
+                                            tempRecipe[comma] = temp;
+                                        temp = "";
+                                        comma++;
+                                    }
+                                    break;
+                                case '\n':
+                                    if(quote != 0)
+                                    {
+                                        tempIngredientObject = new Ingredient();
+                                        oops += tempIngredientObject.setString(temp);
+                                        tempIngredient.Add(tempIngredientObject);
+                                        temp = "";
+                                    }
+                                    else
+                                    {
+                                        tempRecipe[2] = temp;
+                                        comma = 8;
+                                    }
+                                    break;
+                                default:
+                                    temp += c;
+                                    break;
+                            }
+                        }
+                        if(oops != 0)
+                        {
+                            //oops = # of problems in that recipe
+                            oops = 0;
+                        }
+                        else
+                            full.Add(new Recipe(Convert.ToInt32(temp[0]), tempRecipe[1], tempIngredient, tempRecipe[3], tempRecipe[4], tempRecipe[5], tempRecipe[6], tempRecipe[2]));
+
+                        comma = 0;
+                        quote = 0;
+                        temp = "";
+                        tempIngredient.Clear();
+                    }
+                }
+            }
+            catch(FileNotFoundException)
+            {
+                Console.WriteLine("Error: File does not exist.");
+                return;
+            }
+        }
+
+
         static void Main(string[] args)
         {
-            Console.WriteLine("yo");
+
         }
     }
 }
