@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 
 namespace RecipeApplication
 {
@@ -7,14 +7,14 @@ namespace RecipeApplication
     {
         private int ID;
         private string name;
-        private ArrayList<Ingredient> ingredientList;
+        private List<Ingredient> ingredientList;
         private string prepStyle;
         private string iceStyle;
         private string garnish;
         private string glass;
         private string instructions;
 
-        public Recipe(int id, string na, ArrayList<Ingredient> il, string pr, string ic, string ga, string gl, string i)
+        public Recipe(int id, string na, List<Ingredient> il, string pr, string ic, string ga, string gl, string i)
         {
             ID = id;
             name = na;
@@ -39,14 +39,14 @@ namespace RecipeApplication
 
         public static bool operator < (Recipe lhs, Recipe rhs)
         {
-            if(Compare(lhs.getName(), rhs.getName()) < 0)
+            if(String.Compare(lhs.getName(), rhs.getName()) < 0)
                 return true;
             else
                 return false;
         }
         public static bool operator > (Recipe lhs, Recipe rhs)
         {
-            if(Compare(lhs.getName(), rhs.getName()) > 0)
+            if(String.Compare(lhs.getName(), rhs.getName()) > 0)
                 return true;
             else
                 return false;
@@ -54,7 +54,7 @@ namespace RecipeApplication
 
         public int getID() {    return ID;  }
         public string getName() {    return name;  }
-        public ArrayList<Ingredient> getIngredientList() {return ingredientList;  }
+        public List<Ingredient> getIngredientList() {return ingredientList;  }
         public string getPrepStyle() {    return prepStyle;    }
         public string getIceStyle() {    return iceStyle;  }
         public string getGarnish() {    return garnish;    }
@@ -62,7 +62,7 @@ namespace RecipeApplication
         public string getInstructions() {    return instructions;  }
 
         public void setName(string n) { name = n;   }
-        public void setIngredientList(ArrayList<Ingredient> i) {    ingredientList = i; }
+        public void setIngredientList(List<Ingredient> i) {    ingredientList = i; }
         public void setPrepStyle(string p) {    prepStyle = p;  }
         public void setIceStyle(string i) { iceStyle = i;   }
         public void setGarnish(string g) {  garnish = g;    }
@@ -99,8 +99,10 @@ namespace RecipeApplication
 
         public int setString(string i)
         {
-            string[] parts = i.Split(' ', 3);
-            amount = ToString(parts[0]);
+            char[] delim = {' '};
+            int count = 3;
+            string[] parts = null;
+            parts = i.Split(delim, count);
             try
             {
                 amount = Convert.ToDouble(parts[0]);
