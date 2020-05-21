@@ -253,11 +253,79 @@ namespace RecipeApplication
                 Console.WriteLine(r.ToString());
         }
 
+        static void searchRecipeList(List<Recipe> full)
+        {
+            string c;
+            int count = 0;
+            string searchWord = "";
+            List<string> searchIngredients = new List<string>();
+            List<Recipe> narrow = new List<Recipe>();
+
+            Console.WriteLine("What would you like to search the recipe list by?");
+            Console.WriteLine("(1) Name");
+            Console.WriteLine("(2) Ingredients");
+            Console.WriteLine("(0) Quit");
+
+            c = Console.ReadLine();
+            while(c[0] != '0')
+            {
+                switch (c[0])
+                {
+                    case '1':
+                        Console.WriteLine("Please enter the name you would like to search for");
+                        searchWord = Console.ReadLine();
+                        foreach (Recipe r in full)
+                        {
+                            if(r.getName().ToLower().Contains(searchWord.ToLower()))
+                                narrow.Add(r);
+                        }
+                        break;
+                    case '2':
+                        Console.WriteLine("Please enter each ingredient you would like to search for followed by the enter key");
+                        Console.WriteLine("When you are finished entering ingredients, type 69 and hit enter");
+                        searchWord = Console.ReadLine();
+                        while(!searchWord.Equals("69", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            searchIngredients.Add(searchWord);
+                            searchWord = Console.ReadLine();
+                        }
+                        foreach (Recipe r in full)
+                        {
+                            foreach (Ingredient i in r.getIngredientList())
+                            {
+                                foreach (string s in searchIngredients)
+                                {
+                                    if(i.ToString().ToLower().Contains(s.ToLower())) // if the ingredient is in the search list
+                                    {
+                                        count++;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(count == r.getIngredientList().Count)
+                                narrow.Add(r);
+                            count = 0;
+                        }
+                        break;
+                    default:
+                        Console.WriteLine("{0} is not an option, quitting to previous menu", c);
+                        break;
+                }
+                printRecipeList(narrow);
+                narrow.Clear();
+                
+                Console.WriteLine("What would you like to search the recipe list by?");
+                Console.WriteLine("(1) Name");
+                Console.WriteLine("(2) Ingredients");
+                Console.WriteLine("(0) Quit");
+                c = Console.ReadLine();
+            }
+        }
         static void Main(string[] args)
         {
             List<Recipe> full = new List<Recipe>();
             loadRecipeList(full, "Cocktails V2.csv");
-            Console.WriteLine(full[69].ToString());
+            searchRecipeList(full);
         }
     }
 }
