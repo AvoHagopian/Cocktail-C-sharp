@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace RecipeApplication
@@ -19,7 +20,8 @@ namespace RecipeApplication
         {
             ID = id;
             name = na;
-            ingredientList = il;
+            ingredientList = new List<Ingredient>();
+            setIngredientList(il);
             prepStyle = pr;
             iceStyle = ic;
             garnish = ga;
@@ -30,6 +32,7 @@ namespace RecipeApplication
         {
             ID = 0;
             name = "";
+            ingredientList = new List<Ingredient>();
             ingredientList.Clear();
             prepStyle = "";
             iceStyle = "";
@@ -63,7 +66,12 @@ namespace RecipeApplication
         public string getInstructions() { return instructions; }
 
         public void setName(string n) { name = n; }
-        public void setIngredientList(List<Ingredient> i) { ingredientList = i; }
+        public void setIngredientList(List<Ingredient> i)
+        {
+            ingredientList.Clear();
+            foreach(Ingredient ing in i)
+                ingredientList.Add(ing);
+        }
         public void setPrepStyle(string p) { prepStyle = p; }
         public void setIceStyle(string i) { iceStyle = i; }
         public void setGarnish(string g) { garnish = g; }
@@ -76,11 +84,9 @@ namespace RecipeApplication
             string ret = "";
             ret += String.Format("{0,-20}{1}\n", "ID:", ID);
             ret += String.Format("{0,-20}{1}\n", "Name:", name);
-            ret += String.Format("{0,-20}{1}\n", "Ingredient List:", ingredientList[0]);
-            for (int i = 1; i < ingredientList.Count; i++)
-            {
-                ret += String.Format("{0,-20}{1}\n", "", ingredientList[0]);
-            }
+            ret += String.Format("{0,-20}{1}\n", "Ingredient List:", ingredientList[0].ToString());
+            foreach (Ingredient i in ingredientList.Skip(1))
+                ret += String.Format("{0,-20}{1}\n", "", i.ToString());
             ret += String.Format("{0,-20}{1}\n", "Preperation Style:", prepStyle);
             ret += String.Format("{0,-20}{1}\n", "Ice Style:", iceStyle);
             ret += String.Format("{0,-20}{1}\n", "Garnish:", garnish);
@@ -125,7 +131,7 @@ namespace RecipeApplication
             string[] parts = i.Split(delim, count, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length != 3)
             {
-                Console.WriteLine("Not enough words in ingredient: {0}", i);
+                // Console.WriteLine("Not enough words in ingredient: {0}", i);
                 return 1;
             }
             try
@@ -134,10 +140,11 @@ namespace RecipeApplication
             }
             catch (FormatException)
             {
-                Console.WriteLine("Could not convert {0} to type double.", parts[0]);
+                // Console.WriteLine("Could not convert {0} to type double.", parts[0]);
                 return 1;
             }
             unit = parts[1];
+            ingredient = parts[2];
             return 0;
         }
 
@@ -203,7 +210,6 @@ namespace RecipeApplication
                                     }
                                 }
                             }
-                            //Console.WriteLine(temp);
                             tempRecipe[i] = temp;
                             temp = "";
                         }
@@ -213,25 +219,22 @@ namespace RecipeApplication
                         string[] ingredients = tempRecipe[2].Split(sep, StringSplitOptions.RemoveEmptyEntries);
                         tempIngredientObject = new Ingredient();
 
-                        for (int i = 0; i < ingredients.Length; i++)
+                        foreach (string i in ingredients)
                         {
-                            oops += tempIngredientObject.setString(ingredients[i]);
+                            tempIngredientObject = new Ingredient();
+                            oops += tempIngredientObject.setString(i);
                             tempIngredient.Add(tempIngredientObject);
                         }
-                        /*
-                        for(int i  = 0; i < 8; i++)
-                            Console.WriteLine(tempRecipe[i]);
-                        Console.WriteLine("\n");
-                        */
                         if (oops != 0)
                         {
                             //oops = # of problems in that recipe
-                            Console.WriteLine("ID: {0} Name: {1} has {2} errors. Recipe not loaded.\n", tempRecipe[0], tempRecipe[1], oops);
+                            // Console.WriteLine("ID: {0} Name: {1} has {2} errors. Recipe not loaded.\n", tempRecipe[0], tempRecipe[1], oops);
                             oops = 0;
                         }
                         else
                             full.Add(new Recipe(Convert.ToInt32(tempRecipe[0]), tempRecipe[1], tempIngredient, tempRecipe[3], tempRecipe[4], tempRecipe[5], tempRecipe[6], tempRecipe[7]));
 
+                        List<Ingredient> six = full[0].getIngredientList();
                         tempIngredient.Clear();
                         Array.Clear(tempRecipe, 0, tempRecipe.Length);
                     }
@@ -244,10 +247,17 @@ namespace RecipeApplication
             }
         }
 
+        static void printRecipeList(List<Recipe> full)
+        {
+            foreach(Recipe r in full)
+                Console.WriteLine(r.ToString());
+        }
+
         static void Main(string[] args)
         {
             List<Recipe> full = new List<Recipe>();
             loadRecipeList(full, "Cocktails V2.csv");
+            Console.WriteLine(full[69].ToString());
         }
     }
 }
