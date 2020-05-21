@@ -38,46 +38,46 @@ namespace RecipeApplication
             instructions = "";
         }
 
-        public static bool operator < (Recipe lhs, Recipe rhs)
+        public static bool operator <(Recipe lhs, Recipe rhs)
         {
-            if(String.Compare(lhs.getName(), rhs.getName()) < 0)
+            if (String.Compare(lhs.getName(), rhs.getName()) < 0)
                 return true;
             else
                 return false;
         }
-        public static bool operator > (Recipe lhs, Recipe rhs)
+        public static bool operator >(Recipe lhs, Recipe rhs)
         {
-            if(String.Compare(lhs.getName(), rhs.getName()) > 0)
+            if (String.Compare(lhs.getName(), rhs.getName()) > 0)
                 return true;
             else
                 return false;
         }
 
-        public int getID() {    return ID;  }
-        public string getName() {    return name;  }
-        public List<Ingredient> getIngredientList() {return ingredientList;  }
-        public string getPrepStyle() {    return prepStyle;    }
-        public string getIceStyle() {    return iceStyle;  }
-        public string getGarnish() {    return garnish;    }
-        public string getGlass() {    return glass;    }
-        public string getInstructions() {    return instructions;  }
+        public int getID() { return ID; }
+        public string getName() { return name; }
+        public List<Ingredient> getIngredientList() { return ingredientList; }
+        public string getPrepStyle() { return prepStyle; }
+        public string getIceStyle() { return iceStyle; }
+        public string getGarnish() { return garnish; }
+        public string getGlass() { return glass; }
+        public string getInstructions() { return instructions; }
 
-        public void setName(string n) { name = n;   }
-        public void setIngredientList(List<Ingredient> i) {    ingredientList = i; }
-        public void setPrepStyle(string p) {    prepStyle = p;  }
-        public void setIceStyle(string i) { iceStyle = i;   }
-        public void setGarnish(string g) {  garnish = g;    }
-        public void setGlass(string g) {    glass = g;  }
-        public void setInstructions(string i) { instructions = i;   }
+        public void setName(string n) { name = n; }
+        public void setIngredientList(List<Ingredient> i) { ingredientList = i; }
+        public void setPrepStyle(string p) { prepStyle = p; }
+        public void setIceStyle(string i) { iceStyle = i; }
+        public void setGarnish(string g) { garnish = g; }
+        public void setGlass(string g) { glass = g; }
+        public void setInstructions(string i) { instructions = i; }
 
-        
+
         public override string ToString()
         {
             string ret = "";
             ret += String.Format("{0,-20}{1}\n", "ID:", ID);
             ret += String.Format("{0,-20}{1}\n", "Name:", name);
             ret += String.Format("{0,-20}{1}\n", "Ingredient List:", ingredientList[0]);
-            for(int i = 1; i < ingredientList.Count; i++)
+            for (int i = 1; i < ingredientList.Count; i++)
             {
                 ret += String.Format("{0,-20}{1}\n", "", ingredientList[0]);
             }
@@ -96,7 +96,7 @@ namespace RecipeApplication
         private double amount;
         private string unit;
         private string ingredient;
-        
+
         public Ingredient(double a, string u, string i)
         {
             amount = a;
@@ -110,30 +110,34 @@ namespace RecipeApplication
             ingredient = "";
         }
 
-        public double getAmount(){ return amount;  }
-        public string getUnit(){   return unit;    }
-        public string getIngredient(){ return ingredient;  }
+        public double getAmount() { return amount; }
+        public string getUnit() { return unit; }
+        public string getIngredient() { return ingredient; }
 
-        public void setAmount(double a){   amount = a; }
-        public void setUnit(string u){ unit = u;   }
-        public void setIngredient(string i){   ingredient = i; }
+        public void setAmount(double a) { amount = a; }
+        public void setUnit(string u) { unit = u; }
+        public void setIngredient(string i) { ingredient = i; }
 
         public int setString(string i)
         {
-            char[] delim = {' '};
+            char[] delim = { ' ' };
             int count = 3;
-            string[] parts = null;
-            parts = i.Split(delim, count);
+            string[] parts = i.Split(delim, count, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length != 3)
+            {
+                Console.WriteLine("Not enough words in ingredient: {0}", i);
+                return 1;
+            }
             try
             {
                 amount = Convert.ToDouble(parts[0]);
             }
             catch (FormatException)
             {
+                Console.WriteLine("Could not convert {0} to type double.", parts[0]);
                 return 1;
             }
             unit = parts[1];
-            ingredient = parts[2];
             return 0;
         }
 
@@ -146,85 +150,94 @@ namespace RecipeApplication
     class RecipeLoader
     {
         // loads all recipes from file filename into vector full
-        void loadRecipeList(List<Recipe> full, string filename)
+        static void loadRecipeList(List<Recipe> full, string filename)
         {
             try
             {
-                using(StreamReader fin = new StreamReader(new FileStream(filename, FileMode.Open, FileAccess.Read)))
+                using (StreamReader fin = new StreamReader(new FileStream(filename, FileMode.Open, FileAccess.Read)))
                 {
                     char c;
                     string temp = "";
-                    string[] tempRecipe = new string[7];
-                    int quote = 0;
+                    string[] tempRecipe = new string[8];
+                    bool quote = false;
                     int oops = 0;
-                    int comma = 0;
                     full.Clear();
                     List<Ingredient> tempIngredient = new List<Ingredient>();
                     Ingredient tempIngredientObject;
 
-                    while(fin.Peek() >= 0)
+                    while (fin.Peek() >= 0)
                     {
-                        while(comma < 8)
+                        for (int i = 0; i < 8; i++)
                         {
                             c = (char)fin.Read();
-                            switch(c)
+
+                            if (c == '"')
                             {
-                                case '"':
-                                    if(quote == 0)
-                                        quote++;
-                                    else
-                                        quote--;
-                                    break;
-                                case ',':
-                                    if(quote == 0)
+                                quote = true;
+                                while (quote)
+                                {
+                                    c = (char)fin.Read();
+                                    if (c == '"')
                                     {
-                                        if(comma == 2)
-                                        {
-                                            tempIngredientObject = new Ingredient();
-                                            oops += tempIngredientObject.setString(temp);
-                                            tempIngredient.Add(tempIngredientObject);
-                                        }
+                                        if ((char)fin.Peek() == ',' || (char)fin.Peek() == '\n')
+                                            quote = false;
                                         else
-                                            tempRecipe[comma] = temp;
-                                        temp = "";
-                                        comma++;
-                                    }
-                                    break;
-                                case '\n':
-                                    if(quote != 0)
-                                    {
-                                        tempIngredientObject = new Ingredient();
-                                        oops += tempIngredientObject.setString(temp);
-                                        tempIngredient.Add(tempIngredientObject);
-                                        temp = "";
+                                        {
+                                            c = (char)fin.Read();
+                                            temp += c;
+                                        }
                                     }
                                     else
-                                    {
-                                        tempRecipe[2] = temp;
-                                        comma = 8;
-                                    }
-                                    break;
-                                default:
-                                    temp += c;
-                                    break;
+                                        temp += c;
+                                }
+                                c = (char)fin.Read();
                             }
+                            else
+                            {
+                                if (c != '\n')
+                                {
+                                    while (c != ',' && c != '\n')
+                                    {
+                                        temp += c;
+                                        c = (char)fin.Read();
+                                    }
+                                }
+                            }
+                            //Console.WriteLine(temp);
+                            tempRecipe[i] = temp;
+                            temp = "";
                         }
-                        if(oops != 0)
+
+                        char[] sep = { '\n' };
+
+                        string[] ingredients = tempRecipe[2].Split(sep, StringSplitOptions.RemoveEmptyEntries);
+                        tempIngredientObject = new Ingredient();
+
+                        for (int i = 0; i < ingredients.Length; i++)
+                        {
+                            oops += tempIngredientObject.setString(ingredients[i]);
+                            tempIngredient.Add(tempIngredientObject);
+                        }
+                        /*
+                        for(int i  = 0; i < 8; i++)
+                            Console.WriteLine(tempRecipe[i]);
+                        Console.WriteLine("\n");
+                        */
+                        if (oops != 0)
                         {
                             //oops = # of problems in that recipe
+                            Console.WriteLine("ID: {0} Name: {1} has {2} errors. Recipe not loaded.\n", tempRecipe[0], tempRecipe[1], oops);
                             oops = 0;
                         }
                         else
-                            full.Add(new Recipe(Convert.ToInt32(temp[0]), tempRecipe[1], tempIngredient, tempRecipe[3], tempRecipe[4], tempRecipe[5], tempRecipe[6], tempRecipe[2]));
+                            full.Add(new Recipe(Convert.ToInt32(tempRecipe[0]), tempRecipe[1], tempIngredient, tempRecipe[3], tempRecipe[4], tempRecipe[5], tempRecipe[6], tempRecipe[7]));
 
-                        comma = 0;
-                        quote = 0;
-                        temp = "";
                         tempIngredient.Clear();
+                        Array.Clear(tempRecipe, 0, tempRecipe.Length);
                     }
                 }
             }
-            catch(FileNotFoundException)
+            catch (FileNotFoundException)
             {
                 Console.WriteLine("Error: File does not exist.");
                 return;
@@ -233,7 +246,8 @@ namespace RecipeApplication
 
         static void Main(string[] args)
         {
-
+            List<Recipe> full = new List<Recipe>();
+            loadRecipeList(full, "Cocktails V2.csv");
         }
     }
 }
