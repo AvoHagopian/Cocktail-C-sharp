@@ -69,7 +69,7 @@ namespace RecipeApplication
         public void setIngredientList(List<Ingredient> i)
         {
             ingredientList.Clear();
-            foreach(Ingredient ing in i)
+            foreach (Ingredient ing in i)
                 ingredientList.Add(ing);
         }
         public void setPrepStyle(string p) { prepStyle = p; }
@@ -102,27 +102,39 @@ namespace RecipeApplication
         private double amount;
         private string unit;
         private string ingredient;
+        private bool weird;
 
         public Ingredient(double a, string u, string i)
         {
             amount = a;
             unit = u;
             ingredient = i;
+            weird = false;
+        }
+        public Ingredient(string w)
+        {
+            amount = 0;
+            unit = "NULL";
+            ingredient = w;
+            weird = true;
         }
         public Ingredient()
         {
             amount = 0;
             unit = "NULL";
             ingredient = "";
+            weird = false;
         }
 
         public double getAmount() { return amount; }
         public string getUnit() { return unit; }
         public string getIngredient() { return ingredient; }
+        public bool getWeird() { return weird; }
 
         public void setAmount(double a) { amount = a; }
         public void setUnit(string u) { unit = u; }
         public void setIngredient(string i) { ingredient = i; }
+        public void setWeird(bool w) { weird = w; }
 
         public int setString(string i)
         {
@@ -132,6 +144,8 @@ namespace RecipeApplication
             if (parts.Length != 3)
             {
                 // Console.WriteLine("Not enough words in ingredient: {0}", i);
+                setWeird(true);
+                setIngredient(i);
                 return 1;
             }
             try
@@ -141,28 +155,32 @@ namespace RecipeApplication
             catch (FormatException)
             {
                 // Console.WriteLine("Could not convert {0} to type double.", parts[0]);
+                setWeird(true);
+                setIngredient(i);
                 return 1;
             }
             unit = parts[1];
             ingredient = parts[2];
             return 0;
         }
-
         public override string ToString()
         {
-            return String.Format("{0:F} {1} {2}", amount, unit, ingredient);
+            if(getWeird())
+                return String.Format("{0}", ingredient);
+            else
+                return String.Format("{0:F} {1} {2}", amount, unit, ingredient);
         }
     }
 
     class RecipeLoader
     {
-        // loads all recipes from file filename into vector full
         static void loadRecipeList(List<Recipe> full, string filename)
         {
             try
             {
                 using (StreamReader fin = new StreamReader(new FileStream(filename, FileMode.Open, FileAccess.Read)))
                 {
+                    StreamWriter fout = new StreamWriter(@"C:\\Users\\Avo\\source\\repos\\Recipe\\ErrorOutput.txt");
                     char c;
                     string temp = "";
                     string[] tempRecipe = new string[8];
@@ -170,6 +188,7 @@ namespace RecipeApplication
                     int oops = 0;
                     full.Clear();
                     List<Ingredient> tempIngredient = new List<Ingredient>();
+                    List<string> errorIngredients = new List<string>();
                     Ingredient tempIngredientObject;
 
                     while (fin.Peek() >= 0)
@@ -222,19 +241,26 @@ namespace RecipeApplication
                         foreach (string i in ingredients)
                         {
                             tempIngredientObject = new Ingredient();
-                            oops += tempIngredientObject.setString(i);
+                            if(tempIngredientObject.setString(i) == 1)
+                            {
+                                errorIngredients.Add(i);
+                                oops++;
+                            }
                             tempIngredient.Add(tempIngredientObject);
                         }
-                        if (oops != 0)
+                        // oops = # of problems in that recipe
+                        if (oops > 0)
                         {
-                            //oops = # of problems in that recipe
-                            // Console.WriteLine("ID: {0} Name: {1} has {2} errors. Recipe not loaded.\n", tempRecipe[0], tempRecipe[1], oops);
+                            fout.WriteLine("ID: {0} Name: {1} has {2} errors. Recipe loaded cautiously.", tempRecipe[0], tempRecipe[1], oops);
+                            fout.WriteLine("Ingredients with errors:");
+                            foreach(string e in errorIngredients)
+                                fout.WriteLine("{0}", e);
+                            fout.WriteLine();
+                            errorIngredients.Clear();
                             oops = 0;
                         }
-                        else
-                            full.Add(new Recipe(Convert.ToInt32(tempRecipe[0]), tempRecipe[1], tempIngredient, tempRecipe[3], tempRecipe[4], tempRecipe[5], tempRecipe[6], tempRecipe[7]));
+                        full.Add(new Recipe(Convert.ToInt32(tempRecipe[0]), tempRecipe[1], tempIngredient, tempRecipe[3], tempRecipe[4], tempRecipe[5], tempRecipe[6], tempRecipe[7]));
 
-                        List<Ingredient> six = full[0].getIngredientList();
                         tempIngredient.Clear();
                         Array.Clear(tempRecipe, 0, tempRecipe.Length);
                     }
@@ -249,7 +275,7 @@ namespace RecipeApplication
 
         static void printRecipeList(List<Recipe> full)
         {
-            foreach(Recipe r in full)
+            foreach (Recipe r in full)
                 Console.WriteLine(r.ToString());
         }
 
@@ -267,7 +293,7 @@ namespace RecipeApplication
             Console.WriteLine("(0) Quit");
 
             c = Console.ReadLine();
-            while(c[0] != '0')
+            while (c[0] != '0')
             {
                 switch (c[0])
                 {
@@ -276,7 +302,7 @@ namespace RecipeApplication
                         searchWord = Console.ReadLine();
                         foreach (Recipe r in full)
                         {
-                            if(r.getName().ToLower().Contains(searchWord.ToLower()))
+                            if (r.getName().ToLower().Contains(searchWord.ToLower()))
                                 narrow.Add(r);
                         }
                         break;
@@ -284,7 +310,7 @@ namespace RecipeApplication
                         Console.WriteLine("Please enter each ingredient you would like to search for followed by the enter key");
                         Console.WriteLine("When you are finished entering ingredients, type 69 and hit enter");
                         searchWord = Console.ReadLine();
-                        while(!searchWord.Equals("69", StringComparison.CurrentCultureIgnoreCase))
+                        while (!searchWord.Equals("69", StringComparison.CurrentCultureIgnoreCase))
                         {
                             searchIngredients.Add(searchWord);
                             searchWord = Console.ReadLine();
@@ -295,14 +321,14 @@ namespace RecipeApplication
                             {
                                 foreach (string s in searchIngredients)
                                 {
-                                    if(i.ToString().ToLower().Contains(s.ToLower())) // if the ingredient is in the search list
+                                    if (i.ToString().ToLower().Contains(s.ToLower())) // if the ingredient is in the search list
                                     {
                                         count++;
                                         break;
                                     }
                                 }
                             }
-                            if(count == r.getIngredientList().Count)
+                            if (count == r.getIngredientList().Count)
                                 narrow.Add(r);
                             count = 0;
                         }
@@ -313,7 +339,7 @@ namespace RecipeApplication
                 }
                 printRecipeList(narrow);
                 narrow.Clear();
-                
+
                 Console.WriteLine("What would you like to search the recipe list by?");
                 Console.WriteLine("(1) Name");
                 Console.WriteLine("(2) Ingredients");
@@ -321,11 +347,106 @@ namespace RecipeApplication
                 c = Console.ReadLine();
             }
         }
+
+        static void saveRecipeList(List<Recipe> full, string filename)
+        {
+            int count = 0;
+            string ret = "";
+            try
+            {
+                using (StreamWriter fout = new StreamWriter(new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Write)))
+                {
+                    foreach (Recipe r in full)
+                    {
+                        // check ID
+                        ret += r.getID().ToString();
+                        ret += ',';
+
+                        // check name
+                        ret = partToString(ret, r.getName());
+                        ret += ',';
+
+                        // check ingredients
+                        ret += '"';
+                        foreach (Ingredient i in r.getIngredientList())
+                        {
+                            count++;
+                            foreach (char c in i.ToString())
+                            {
+                                if (c == '"')
+                                    ret += c;
+                                ret += c;
+                            }
+                            if (count != r.getIngredientList().Count)
+                                ret += '\n';
+                        }
+                        ret += "\",";
+                        count = 0;
+
+                        // check prep
+                        ret = partToString(ret, r.getPrepStyle());
+                        ret += ',';
+
+                        // check ice
+                        ret = partToString(ret, r.getIceStyle());
+                        ret += ',';
+
+                        // check garnish
+                        ret = partToString(ret, r.getGarnish());
+                        ret += ',';
+
+                        // check glass
+                        ret = partToString(ret, r.getGlass());
+                        ret += ',';
+
+                        // check instructions
+                        ret = partToString(ret, r.getInstructions());
+
+                        ret += '\n';
+                        fout.Write(ret);
+                        Console.Write(ret);
+                        ret = "";
+                        Console.WriteLine("Recipe: {0} has been saved.", r.getName());
+                    }
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine("Error: File does not exist.");
+                return;
+            }
+        }
+
+        static string partToString(string ret, string toAdd)
+        {
+            bool quoteCheck = false;
+
+            if (toAdd.Contains('"') || toAdd.Contains(','))
+            {
+                quoteCheck = true;
+                ret += '"';
+            }
+            foreach (char c in toAdd)
+            {
+                if (c == '"')
+                    ret += c;
+                ret += c;
+            }
+            if (quoteCheck)
+                ret += '"';
+            quoteCheck = false;
+
+            return ret;
+        }
+
         static void Main(string[] args)
         {
             List<Recipe> full = new List<Recipe>();
-            loadRecipeList(full, "Cocktails V2.csv");
-            searchRecipeList(full);
+            // string inputFile = "";
+            // string outputFile = "";
+            loadRecipeList(full, "C:\\Users\\Avo\\source\\repos\\Recipe\\Cocktails V2.csv");
+            printRecipeList(full);
+            saveRecipeList(full, "C:\\Users\\Avo\\Desktop\\Cocktail-C-sharp\\test.csv");
         }
     }
 }
