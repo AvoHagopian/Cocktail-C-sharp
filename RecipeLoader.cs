@@ -328,8 +328,17 @@ namespace RecipeApplication
                                     }
                                 }
                             }
-                            if (count == r.getIngredientList().Count)
+                            //for exact match of ingredients
+                            //if (count == r.getIngredientList().Count)
+                            //    narrow.Add(r);
+
+                            //for all ingredients searched for
+                            if (count == searchIngredients.Count)
                                 narrow.Add(r);
+
+                            //for at least one match
+                            //if (count > 0)
+                            //    narrow.Add(r);
                             count = 0;
                         }
                         break;
@@ -442,11 +451,45 @@ namespace RecipeApplication
         static void Main(string[] args)
         {
             List<Recipe> full = new List<Recipe>();
-            // string inputFile = "";
-            // string outputFile = "";
-            loadRecipeList(full, "C:\\Users\\Avo\\source\\repos\\Recipe\\Cocktails V2.csv");
-            printRecipeList(full);
-            saveRecipeList(full, "C:\\Users\\Avo\\Desktop\\Cocktail-C-sharp\\test.csv");
+            Console.WriteLine("Enter the name of the file to read from (Must be a .csv file with no spaces in the title)");
+            string inputFile = Console.ReadLine();
+            string outputFile;
+            string c;
+            loadRecipeList(full, inputFile);
+            Console.WriteLine("Enter the corresponding number to what you would like to do.");
+            Console.WriteLine("(1)Print File");
+            Console.WriteLine("(2)Search File");
+            Console.WriteLine("(3)Save File");
+            Console.WriteLine("(0)Quit");
+            c = Console.ReadLine();
+            while (c[0] != '0')
+            {
+                switch (c[0])
+                {
+                    case '1':
+                        printRecipeList(full);
+                        break;
+                    case '2':
+                        searchRecipeList(full);
+                        break;
+                    case '3':
+                        //saveRecipeList()
+                        Console.WriteLine("Enter the name of the file you would like to save the file as (Must end in .csv)");
+                        outputFile = Console.ReadLine();
+                        saveRecipeList(full, outputFile);
+                        break;
+                    default:
+                        Console.WriteLine("{0} is not an option, quitting to previous menu", c);
+                        break;
+                }
+
+                Console.WriteLine("Enter the corresponding number to what you would like to do.");
+                Console.WriteLine("(1)Print File");
+                Console.WriteLine("(2)Search File");
+                Console.WriteLine("(3)Save File");
+                Console.WriteLine("(0)Quit");
+                c = Console.ReadLine();
+            }
         }
     }
 }
