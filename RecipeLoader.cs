@@ -180,7 +180,7 @@ namespace RecipeApplication
             {
                 using (StreamReader fin = new StreamReader(new FileStream(filename, FileMode.Open, FileAccess.Read)))
                 {
-                    StreamWriter fout = new StreamWriter(@"C:\\Users\\Avo\\source\\repos\\Recipe\\ErrorOutput.txt");
+                    StreamWriter fout = new StreamWriter(@"ErrorOutput.txt");
                     char c;
                     string temp = "";
                     string[] tempRecipe = new string[8];
